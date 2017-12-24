@@ -72,7 +72,6 @@ module Amber::Support
           var address = protocol + window.location.host + '/#{WEBSOCKET_PATH}';
           var socket = new WebSocket(address);
           socket.onmessage = function(msg) {
-            console.log(msg);
             if (msg.data == 'reload') {
               window.location.reload();
             } else if (msg.data == 'refreshcss') {
