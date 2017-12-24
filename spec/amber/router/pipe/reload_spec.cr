@@ -3,7 +3,7 @@ require "../../../../spec_helper"
 module Amber
   module Pipe
     describe Reload do
-      it "client should containt injected code" do
+      it "client should contain injected code" do
         reload = Reload.new
         pipeline = Pipeline.new
         request = HTTP::Request.new("GET", "/reload")
