@@ -30,11 +30,10 @@ module Amber::Support
     end
 
     private def watch_files
-      puts "🔃  Your ClientBot is vigilant. beep-boop..."
       watch(["public/**/*"]) do |event|
         event.on_change do |files|
           files.each do |file, timestamp|
-            puts "🔃  watching file: ./#{file}"
+            Amber.logger.puts "Watching file: ./#{file}", "Watcher", :light_gray
             case file
             when .ends_with? ".css"
               reload_clients(msg: "refreshcss")
