@@ -48,7 +48,7 @@ module Amber::Support
 
     # Code from https://github.com/tapio/live-server/blob/master/injected.html
     INJECTED_CODE = <<-HTML
-    <!-- Code injected by live-server -->
+    <!-- Code injected by Amber Framework -->
     <script type="text/javascript">
       // <![CDATA[  <-- For SVG support
       if ('WebSocket' in window) {
