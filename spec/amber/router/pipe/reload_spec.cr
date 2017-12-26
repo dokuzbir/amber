@@ -6,12 +6,12 @@ module Amber
       pipeline = Pipeline.new
       request = HTTP::Request.new("GET", "/reload")
 
-      pipeline.build :web do
-        plug Amber::Pipe::Reload.new
-      end
-
       Amber::Server.router.draw :web do
         get "/reload", HelloController, :world
+      end
+
+      pipeline.build :web do
+        plug Amber::Pipe::Reload.new
       end
 
       it "client should contain injected code" do
