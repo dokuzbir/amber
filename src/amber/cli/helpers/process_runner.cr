@@ -36,22 +36,22 @@ module Sentry
       elsif !@app_running
         log "Compile time errors detected. Shutting down..."
         exit 1
+      else
+        log "Unknown error occurred, Shutting down..."
+        exit 1
       end
     end
 
     private def scan_files
       file_changed = false
-
       Dir.glob(files) do |file|
         timestamp = get_timestamp(file)
-        if FILE_TIMESTAMPS[file]? && FILE_TIMESTAMPS[file] != timestamp
+        msg_prefix = FILE_TIMESTAMPS[file]? ? "" : "Watching file: "
+
+        if FILE_TIMESTAMPS[file]? != timestamp
           FILE_TIMESTAMPS[file] = timestamp
+          log "#{msg_prefix}./#{file.colorize(:light_gray)}"
           file_changed = true
-          log "#{file.colorize(:light_gray)}"
-        elsif FILE_TIMESTAMPS[file]?.nil?
-          FILE_TIMESTAMPS[file] = timestamp
-          file_changed = true
-          log "Watching file: #{file.colorize(:light_gray)}"
         end
       end
 

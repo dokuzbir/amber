@@ -46,24 +46,15 @@ module Amber::Support
     end
 
     private def scan_files
-      file_changed = false
-
       Dir.glob(["public/**/*"]) do |file|
         timestamp = get_timestamp(file)
+        msg_prefix = FILE_TIMESTAMPS[file]? ? "" : "Watching file: "
 
-        if FILE_TIMESTAMPS[file]? && FILE_TIMESTAMPS[file] != timestamp
+        if FILE_TIMESTAMPS[file]? != timestamp
           FILE_TIMESTAMPS[file] = timestamp
-          file_changed = true
-          Amber.logger.puts "./#{file.colorize(:light_gray)}", "Watcher", :light_gray
-        elsif FILE_TIMESTAMPS[file]?.nil?
-          FILE_TIMESTAMPS[file] = timestamp
-          file_changed = true
-          Amber.logger.puts "Watching file: ./#{file.colorize(:light_gray)}", "Watcher", :light_gray
+          Amber.logger.puts "#{msg_prefix}./#{file.colorize(:light_gray)}", "Watcher", :light_gray
+          check_file(file)
         end
-
-        check_file(file) if file_changed
-
-        file_changed = false
       end
     end
 
