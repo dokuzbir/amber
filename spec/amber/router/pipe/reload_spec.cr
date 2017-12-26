@@ -14,6 +14,9 @@ module Amber
         pipeline.build :web do
           plug Amber::Pipe::Reload.new
         end
+
+        pipeline.prepare_pipelines
+
         response = create_request_and_return_io(pipeline, request)
         response.body.should contain "Code injected by Amber Framework"
       end
