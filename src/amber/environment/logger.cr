@@ -9,7 +9,7 @@ module Amber::Environment
 
     {% for name in Severity.constants %}
       def {{name.id.downcase}}(message, color = :light_cyan)
-        log(Severity::{{name.id}}, message, "#{progname}\t|".colorize(color))
+        log(Severity::{{name.id}}, message, "#{progname} \t|".colorize(color))
       end
     {% end %}
   end

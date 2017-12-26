@@ -17,8 +17,9 @@ module Amber
       end
 
       def call(context : HTTP::Server::Context)
-        context.response.print Support::ClientReload::INJECTED_CODE
-        context.response.headers["content-type"] = "text/html"
+        if context.format == "html"
+          context.response.print Support::ClientReload::INJECTED_CODE
+        end
         call_next(context)
       end
     end

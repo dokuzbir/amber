@@ -5,13 +5,18 @@ module Amber::Support
   #
   # Allow clients browser reloading using WebSockets and file watchers.
   struct ClientReload
-    WEBSOCKET_PATH = rand(0x10000000).to_s(36)
-
-    SESSIONS = [] of HTTP::WebSocket
+    FILE_TIMESTAMPS = {} of String => String
+    WEBSOCKET_PATH  = rand(0x10000000).to_s(36)
+    SESSIONS        = [] of HTTP::WebSocket
 
     def initialize
       create_reload_server
-      spawn watch_files
+      spawn do
+        loop do
+          scan_files
+          sleep 1
+        end
+      end
     end
 
     private def create_reload_server
@@ -29,19 +34,38 @@ module Amber::Support
       end
     end
 
-    private def watch_files
-      watch(["public/**/*"]) do |event|
-        event.on_change do |files|
-          files.each do |file, timestamp|
-            Amber.logger.puts "Watching file: ./#{file}", "Watcher", :light_gray
-            case file
-            when .ends_with? ".css"
-              reload_clients(msg: "refreshcss")
-            else
-              reload_clients(msg: "reload")
-            end
-          end
+    private def check_file(file)
+      case file
+      when .ends_with? ".css"
+        reload_clients(msg: "refreshcss")
+      else
+        reload_clients(msg: "reload")
+      end
+    end
+
+    private def get_timestamp(file : String)
+      File.stat(file).mtime.to_s("%Y%m%d%H%M%S")
+    end
+
+    private def scan_files
+      file_changed = false
+
+      Dir.glob(["public/**/*"]) do |file|
+        timestamp = get_timestamp(file)
+
+        if FILE_TIMESTAMPS[file]? && FILE_TIMESTAMPS[file] != timestamp
+          FILE_TIMESTAMPS[file] = timestamp
+          file_changed = true
+          Amber.logger.puts "./#{file.colorize(:light_gray)}", "Watcher", :light_gray
+        elsif FILE_TIMESTAMPS[file]?.nil?
+          FILE_TIMESTAMPS[file] = timestamp
+          file_changed = true
+          Amber.logger.puts "Watching file: ./#{file.colorize(:light_gray)}", "Watcher", :light_gray
         end
+
+        check_file(file) if file_changed
+
+        file_changed = false
       end
     end
 
@@ -58,13 +82,13 @@ module Amber::Support
             var head = document.getElementsByTagName('head')[0];
             for (var i = 0; i < sheets.length; ++i) {
               var elem = sheets[i];
-              head.removeChild(elem);
               var rel = elem.rel;
               if (elem.href && typeof rel != 'string' || rel.length == 0 || rel.toLowerCase() == 'stylesheet') {
+                head.removeChild(elem);
                 var url = elem.href.replace(/(&|\\?)_cacheOverride=\\d+/, '');
                 elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
+                head.appendChild(elem);
               }
-              head.appendChild(elem);
             }
           }
           var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';

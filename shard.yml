@@ -41,10 +41,6 @@ dependencies:
     github: mosop/teeplate
     version: ~> 0.4.5
 
-  sentry:
-    github: samueleaton/sentry
-    version: ~> 0.1.0
-
   micrate:
     github: juanedi/micrate
     version: ~> 0.3.0
@@ -68,7 +64,3 @@ dependencies:
   sqlite3:
     github: crystal-lang/crystal-sqlite3
     version: ~> 0.8.3
-
-  watcher:
-    github: faustinoaq/watcher
-    version: ~> 0.2.0

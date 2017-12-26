@@ -1,11 +1,10 @@
-require "sentry"
-
 module Sentry
   class ProcessRunner
     property processes = [] of Process
     property process_name : String
     property files = [] of String
     @logger : Amber::Environment::Logger
+    FILE_TIMESTAMPS = {} of String => String
 
     def initialize(
                    @process_name : String,
@@ -16,6 +15,8 @@ module Sentry
                    files = [] of String,
                    @logger = Amber::CLI.logger)
       @files = files
+      @npm_process = false
+      @app_running = false
     end
 
     def run
@@ -26,10 +27,16 @@ module Sentry
     end
 
     # Compiles and starts the application
-    #
     def start_app
-      stop_all_processes
-      start_all_processes
+      build_result = build_app_process
+      if build_result && build_result.success?
+        stop_all_processes
+        create_all_processes
+        @app_running = true
+      elsif !@app_running
+        log "Compile time errors detected. Shutting down..."
+        exit 1
+      end
     end
 
     private def scan_files
@@ -40,20 +47,15 @@ module Sentry
         if FILE_TIMESTAMPS[file]? && FILE_TIMESTAMPS[file] != timestamp
           FILE_TIMESTAMPS[file] = timestamp
           file_changed = true
-          log "#{file.capitalize.colorize(:light_gray)}"
+          log "#{file.colorize(:light_gray)}"
         elsif FILE_TIMESTAMPS[file]?.nil?
           FILE_TIMESTAMPS[file] = timestamp
           file_changed = true
-          log "Watching file: #{file.capitalize.colorize(:light_gray)}"
+          log "Watching file: #{file.colorize(:light_gray)}"
         end
       end
 
-      start_app if (file_changed)
-    end
-
-    private def start_all_processes
-      log "Compiling #{project_name}..."
-      create_all_processes
+      start_app if file_changed
     end
 
     private def stop_all_processes
@@ -65,10 +67,11 @@ module Sentry
     end
 
     private def create_all_processes
-      build_app_process
       @processes << create_watch_process
-      sleep 3
-      create_npm_process
+      unless @npm_process
+        create_npm_process
+        @npm_process = true
+      end
     end
 
     private def build_app_process
@@ -83,7 +86,7 @@ module Sentry
 
     private def create_npm_process
       node_log "Installing dependencies..."
-      Process.new("npm install && npm run watch", output: false, error: true, shell: true)
+      Process.new("npm install --loglevel=error && npm run watch", output: false, error: true, shell: true)
       node_log "Watching public directory"
     end
 
