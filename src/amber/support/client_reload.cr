@@ -1,5 +1,3 @@
-require "watcher"
-
 module Amber::Support
   # Used by `Amber::Pipe::Reload`
   #
