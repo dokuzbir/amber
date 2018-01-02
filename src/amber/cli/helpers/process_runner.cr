@@ -86,7 +86,7 @@ module Sentry
 
     private def create_npm_process
       node_log "Installing dependencies..."
-      Process.new("npm install --loglevel=error && npm run watch", , shell: true, output: Process::Redirect::Inherit, error: Process::Redirect::Inherit)
+      Process.new("npm install --loglevel=error && npm run watch", shell: true, output: Process::Redirect::Inherit, error: Process::Redirect::Inherit)
       node_log "Watching public directory"
     end
 
